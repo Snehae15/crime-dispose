@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "882282550117",
+    "project_id": "crime-dispose-2194f",
+    "storage_bucket": "crime-dispose-2194f.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:882282550117:android:80ddb788bff19ce410078c",
+        "android_client_info": {
+          "package_name": "com.example.crime_dispose"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBL-sClRciVWm5VzmTotIm7Rtz9s0jJoOk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
