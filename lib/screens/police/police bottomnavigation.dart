@@ -17,9 +17,7 @@ class _PoliceBottomNaviagtionState extends State<PoliceBottomNaviagtion> {
   final pages = [
     const PoliceViewAllCases(),
     PoliceAddCase(),
-    ViewProfile(
-      loggedInPoliceId: '',
-    ),
+    ViewProfile(),
   ];
 
   @override

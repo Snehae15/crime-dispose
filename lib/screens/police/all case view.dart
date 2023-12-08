@@ -1,6 +1,107 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:crime_dispose/screens/police/view%20case.dart';
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
+
+class PoliceViewCaseDetails extends StatelessWidget {
+  final String caseType;
+  final String location;
+  final String title;
+  final Timestamp date;
+  final String time;
+  final String description;
+  final String imageUrl;
+
+  const PoliceViewCaseDetails({
+    Key? key,
+    required this.caseType,
+    required this.location,
+    required this.title,
+    required this.date,
+    required this.time,
+    required this.description,
+    required this.imageUrl,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    DateTime dateTime = date.toDate();
+
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text("Case Details"),
+      ),
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('Case Type: $caseType',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+              const SizedBox(height: 8),
+              Text('Title: $title',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+              const SizedBox(height: 8),
+              if (imageUrl.isNotEmpty) Image.network(imageUrl),
+              const SizedBox(height: 8),
+              Text('Details:',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+              TextField(
+                maxLines: null,
+                readOnly: true,
+                controller: TextEditingController(text: description),
+                decoration: InputDecoration(
+                  border: InputBorder.none,
+                  contentPadding: EdgeInsets.zero,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  const Icon(Icons.calendar_today),
+                  const SizedBox(width: 8),
+                  Text('Date: ${dateTime.toLocal()}'),
+                ],
+              ),
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  const Icon(Icons.access_time),
+                  const SizedBox(width: 8),
+                  Text('Time: $time'),
+                ],
+              ),
+              const SizedBox(height: 8),
+              InkWell(
+                onTap: () {
+                  _launchMaps(location);
+                },
+                child: Row(
+                  children: [
+                    const Icon(Icons.location_on),
+                    const SizedBox(width: 8),
+                    Text('Location: $location',
+                        style: TextStyle(decoration: TextDecoration.underline)),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _launchMaps(String location) async {
+    final url =
+        'https://www.google.com/maps/search/?api=1&query=${Uri.encodeComponent(location)}';
+    if (await canLaunch(url)) {
+      await launch(url);
+    } else {
+      throw 'Could not launch $url';
+    }
+  }
+}
 
 class PoliceViewAllCases extends StatefulWidget {
   const PoliceViewAllCases({Key? key}) : super(key: key);
@@ -16,84 +117,110 @@ class _PoliceViewAllCasesState extends State<PoliceViewAllCases> {
       appBar: AppBar(
         title: const Text("All Cases"),
       ),
-      body: StreamBuilder(
-        stream: FirebaseFirestore.instance.collection('add_case').snapshots(),
-        builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
-          if (snapshot.hasError) {
-            return Center(
-              child: Text('Error: ${snapshot.error}'),
-            );
-          }
-
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return Center(
-              child: CircularProgressIndicator(),
-            );
-          }
-
-          List<DocumentSnapshot> cases = snapshot.data!.docs;
-
-          return ListView.builder(
-            itemCount: cases.length,
-            itemBuilder: (context, index) {
-              return _buildCaseCard(
-                cases[index]['caseType'] ?? '',
+      body: SingleChildScrollView(
+        child: StreamBuilder(
+          stream: FirebaseFirestore.instance.collection('add_case').snapshots(),
+          builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
+            if (snapshot.hasError) {
+              return Center(
+                child: Text('Error: ${snapshot.error}'),
               );
-            },
-          );
-        },
+            }
+
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const Center(
+                child: CircularProgressIndicator(),
+              );
+            }
+
+            List<DocumentSnapshot> cases = snapshot.data!.docs;
+
+            return Column(
+              children: cases
+                  .map(
+                    (caseDocument) => _buildCaseCard(caseDocument),
+                  )
+                  .toList(),
+            );
+          },
+        ),
       ),
     );
   }
 
-  Widget _buildCaseCard(String caseType) {
+  Widget _buildCaseCard(DocumentSnapshot caseDocument) {
+    String caseType = caseDocument['caseType'] ?? '';
+    String location = caseDocument['location'] ?? '';
+    String title = caseDocument['title'] ?? '';
+    Timestamp date = caseDocument['date'] ?? Timestamp.now();
+    String time = caseDocument['time'] ?? '';
+    String description = caseDocument['description'] ?? '';
+    String imageUrl = caseDocument['imageUrl'] ?? '';
+
     return Card(
+      margin: const EdgeInsets.all(8.0),
       child: ListTile(
-        title: Padding(
-          padding: const EdgeInsets.only(top: 20, right: 150),
-          child: const Icon(Icons.location_on_outlined, size: 15),
-        ),
-        subtitle: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        title: Row(
           children: [
-            Text(
-              'Type: ${caseType ?? 'null'}',
-              style: const TextStyle(fontSize: 16),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                caseType,
+                style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
+              ),
             ),
           ],
         ),
-        trailing: TextButton(
-          onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => Policeviewcase(
-                  caseName: 'Case Name',
-                  category: 'View Category',
-                  imageUrl:
-                      'https://s01.sgp1.digitaloceanspaces.com/large/859674-75199-axhywvjxyg-1511960362.jpg',
-                  details: 'View details about the case here.',
-                  location: 'View location details here.',
-                ),
+        subtitle: Row(
+          children: [
+            const Icon(Icons.location_on),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                'Location: $location',
+                overflow: TextOverflow.ellipsis,
               ),
+            ),
+          ],
+        ),
+        trailing: ElevatedButton(
+          onPressed: () {
+            _viewCaseDetails(
+              caseType,
+              location,
+              title,
+              date,
+              time,
+              description,
+              imageUrl,
             );
           },
-          child: const Padding(
-            padding: EdgeInsets.only(top: 8),
-            child: Text("more"),
-          ),
+          child: const Text("More"),
         ),
-        leading: Padding(
-          padding: const EdgeInsets.only(bottom: 25),
-          child: Text(
-            caseType,
-            style: const TextStyle(fontSize: 18),
-          ),
-        ),
-        shape: const OutlineInputBorder(
-          borderRadius: BorderRadius.all(
-            Radius.circular(10),
-          ),
+      ),
+    );
+  }
+
+  void _viewCaseDetails(
+    String caseType,
+    String location,
+    String title,
+    Timestamp date,
+    String time,
+    String description,
+    String imageUrl,
+  ) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => PoliceViewCaseDetails(
+          caseType: caseType,
+          location: location,
+          title: title,
+          date: date,
+          time: time,
+          description: description,
+          imageUrl: imageUrl,
         ),
       ),
     );

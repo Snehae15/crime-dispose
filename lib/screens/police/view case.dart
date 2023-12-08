@@ -1,18 +1,20 @@
 import 'package:flutter/material.dart';
 
 class Policeviewcase extends StatelessWidget {
-  final String caseName;
+  final String title;
   final String category;
   final String imageUrl;
   final String details;
   final String location;
 
   Policeviewcase({
-    required this.caseName,
+    required this.title,
     required this.category,
     required this.imageUrl,
     required this.details,
     required this.location,
+    required String description,
+    required String caseName,
   });
 
   @override
@@ -29,7 +31,7 @@ class Policeviewcase extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Text(
-              'Case Name: $caseName',
+              'Case Name: $title',
               style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8.0),

@@ -122,7 +122,7 @@ class _AdminHomeState extends State<AdminHome> {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => const PoliceViewAllCases(),
+                    builder: (context) => PoliceViewAllCases(),
                   ),
                 );
               },

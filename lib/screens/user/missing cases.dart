@@ -1,4 +1,4 @@
-import 'package:crime_dispose/screens/user/missing%20cases%20view.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
 class Missing_cases extends StatefulWidget {
@@ -8,7 +8,50 @@ class Missing_cases extends StatefulWidget {
   State<Missing_cases> createState() => _Missing_casesState();
 }
 
+class Case {
+  final String caseName;
+  final String location;
+
+  Case({
+    required this.caseName,
+    required this.location,
+  });
+}
+
 class _Missing_casesState extends State<Missing_cases> {
+  late Future<List<Case>> missingCasesFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    missingCasesFuture = fetchMissingCases();
+  }
+
+  Future<List<Case>> fetchMissingCases() async {
+    try {
+      FirebaseFirestore firestore = FirebaseFirestore.instance;
+      QuerySnapshot querySnapshot = await firestore
+          .collection('add_case')
+          .where('caseType', isEqualTo: 'Missing') // Filter by caseType
+          .get();
+
+      List<Case> missingCases = querySnapshot.docs.map((doc) {
+        Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
+
+        // Ensure the field name matches the one in Firestore document
+        return Case(
+          caseName: data['caseType'] ?? '', // Check the field name here
+          location: data['location'] ?? '',
+        );
+      }).toList();
+
+      return missingCases;
+    } catch (e) {
+      print('Error fetching missing cases: $e');
+      throw e;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -29,22 +72,39 @@ class _Missing_casesState extends State<Missing_cases> {
               ),
             ],
           ),
-          Column(
-            children: [
-              _buildCaseCard("Case 1", "2A madhurika Apt"),
-              _buildCaseCard("Case 2", "2A madhurika Apt"),
-              _buildCaseCard("Case 3", "2A madhurika Apt"),
-              _buildCaseCard("Case 4", "2A madhurika Apt"),
-              _buildCaseCard("Case 5", "2A madhurika Apt"),
-              _buildCaseCard("Case 6", "2A madhurika Apt"),
-            ],
+          FutureBuilder<List<Case>>(
+            future: missingCasesFuture,
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const Center(
+                  child: CircularProgressIndicator(),
+                );
+              }
+
+              if (snapshot.hasError) {
+                print('Error in FutureBuilder: ${snapshot.error}');
+                return const Center(
+                  child: Text('Error loading data'),
+                );
+              }
+
+              List<Case> missingCases = snapshot.data!;
+
+              return Column(
+                children: missingCases.map((missingCase) {
+                  return _buildCaseCard(
+                      missingCase.caseName, missingCase.location, context);
+                }).toList(),
+              );
+            },
           ),
         ],
       ),
     );
   }
 
-  Widget _buildCaseCard(String caseName, String location) {
+  Widget _buildCaseCard(
+      String caseName, String location, BuildContext context) {
     return Card(
       child: ListTile(
         title: const Padding(
@@ -54,11 +114,11 @@ class _Missing_casesState extends State<Missing_cases> {
         subtitle: Text(location),
         trailing: TextButton(
           onPressed: () {
-            // Navigate to CasePage when the "more" button is pressed
+            // Navigate to MissingCaseView when the "more" button is pressed
             Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (context) => const MissingCaseView(),
+                builder: (context) => MissingCaseView(caseName: caseName),
               ),
             );
           },
@@ -77,6 +137,104 @@ class _Missing_casesState extends State<Missing_cases> {
         shape: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),
         ),
+      ),
+    );
+  }
+}
+
+class MissingCaseView extends StatelessWidget {
+  final String caseName;
+
+  const MissingCaseView({Key? key, required this.caseName}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Center(child: Text('Missing case')),
+        backgroundColor: Colors.grey[400],
+      ),
+      backgroundColor: Colors.grey[400],
+      body: FutureBuilder<DocumentSnapshot>(
+        future: FirebaseFirestore.instance
+            .collection('add_case')
+            .where('caseType', isEqualTo: 'Missing')
+            // .where('caseName', isEqualTo: caseName) // Filter by caseName
+            .get()
+            .then((QuerySnapshot querySnapshot) {
+          return querySnapshot.docs.first;
+        }),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(
+              child: CircularProgressIndicator(),
+            );
+          }
+
+          if (snapshot.hasError) {
+            print('Error in FutureBuilder: ${snapshot.error}');
+            return const Center(
+              child: Text('Error loading data'),
+            );
+          }
+
+          var data = snapshot.data!.data() as Map<String, dynamic>;
+
+          return SingleChildScrollView(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Text(
+                  'Case Name: ${data['caseName']}',
+                  style: const TextStyle(
+                      fontSize: 24, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 8.0),
+                Text(
+                  'Category: ${data['category']}',
+                  style: const TextStyle(fontSize: 18),
+                ),
+                const SizedBox(height: 8.0),
+                Image.network(
+                  data['imageUrl'],
+                  height: 200,
+                  fit: BoxFit.cover,
+                ),
+                const SizedBox(height: 16.0),
+                const Text(
+                  'Details:',
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 8.0),
+                Text(
+                  '${data['description']}',
+                  style: const TextStyle(fontSize: 16),
+                ),
+                const SizedBox(height: 16.0),
+                const Text(
+                  'Date and Time:',
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 8.0),
+                Text(
+                  'Date: ${data['date']}, Time: ${data['time']}',
+                  style: const TextStyle(fontSize: 16),
+                ),
+                const SizedBox(height: 16.0),
+                const Text(
+                  'Location:',
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 8.0),
+                Text(
+                  'Location: ${data['location']}',
+                  style: const TextStyle(fontSize: 16),
+                ),
+              ],
+            ),
+          );
+        },
       ),
     );
   }

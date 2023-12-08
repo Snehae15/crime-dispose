@@ -1,12 +1,12 @@
-import 'dart:io';
+import 'dart:io' show File;
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:crime_dispose/screens/police/all%20case%20view.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:location/location.dart';
 
 class PoliceAddCase extends StatefulWidget {
   @override
@@ -17,7 +17,10 @@ class _PoliceAddCaseState extends State<PoliceAddCase> {
   File? image;
   String selectedCaseType = 'Theft';
   DateTime selectedDate = DateTime.now();
+  TimeOfDay selectedTime = TimeOfDay.now();
   TextEditingController descriptionController = TextEditingController();
+  TextEditingController titleController = TextEditingController();
+  TextEditingController locationController = TextEditingController();
 
   Future<void> _pickImage(ImageSource source) async {
     try {
@@ -47,6 +50,44 @@ class _PoliceAddCaseState extends State<PoliceAddCase> {
     }
   }
 
+  Future<void> _selectTime(BuildContext context) async {
+    final TimeOfDay? pickedTime = await showTimePicker(
+      context: context,
+      initialTime: selectedTime,
+    );
+
+    if (pickedTime != null && pickedTime != selectedTime) {
+      setState(() {
+        selectedTime = pickedTime;
+      });
+    }
+  }
+
+  Future<void> _selectLocation(BuildContext context) async {
+    try {
+      Location location = Location();
+      LocationData currentLocation = await location.getLocation();
+
+      double latitude = currentLocation.latitude!;
+      double longitude = currentLocation.longitude!;
+
+      setState(() {
+        locationController.text = 'Latitude: $latitude, Longitude: $longitude';
+      });
+    } catch (e) {
+      print('Error getting location: $e');
+      Fluttertoast.showToast(
+        msg: 'Error getting location. Please try again.',
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.BOTTOM,
+        timeInSecForIosWeb: 1,
+        backgroundColor: Colors.red,
+        textColor: Colors.white,
+        fontSize: 16.0,
+      );
+    }
+  }
+
   Future<void> _uploadCase() async {
     try {
       print('Uploading case...');
@@ -68,7 +109,11 @@ class _PoliceAddCaseState extends State<PoliceAddCase> {
             await firestore.collection('add_case').add({
           'caseType': selectedCaseType,
           'date': selectedDate,
+          'time':
+              '${selectedTime.hour}:${selectedTime.minute}', // Convert TimeOfDay to string
           'description': descriptionController.text,
+          'title': titleController.text,
+          'location': locationController.text,
           'imageUrl': imageUrl,
         });
 
@@ -200,6 +245,52 @@ class _PoliceAddCaseState extends State<PoliceAddCase> {
               ],
             ),
             const SizedBox(height: 16.0),
+            Row(
+              children: [
+                const Text(
+                  'Time:',
+                  style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(width: 8.0),
+                GestureDetector(
+                  onTap: () => _selectTime(context),
+                  child: const Icon(Icons.access_time),
+                ),
+                const SizedBox(width: 8.0),
+                Text(
+                  "${selectedTime.format(context)}",
+                  style: const TextStyle(fontSize: 18.0),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16.0),
+            ElevatedButton(
+              onPressed: () => _selectLocation(context),
+              child: Row(
+                children: [
+                  Icon(Icons.location_on), // Location icon
+                  const SizedBox(width: 8.0),
+                  const Text('Select Location'),
+                ],
+              ),
+            ),
+            const SizedBox(height: 16.0),
+            TextField(
+              controller: titleController,
+              decoration: const InputDecoration(
+                labelText: 'Crime Title',
+                border: OutlineInputBorder(),
+              ),
+            ),
+            const SizedBox(height: 16.0),
+            TextField(
+              controller: locationController,
+              decoration: const InputDecoration(
+                labelText: 'Crime Location',
+                border: OutlineInputBorder(),
+              ),
+            ),
+            const SizedBox(height: 16.0),
             TextField(
               controller: descriptionController,
               maxLines: 4,
@@ -216,26 +307,6 @@ class _PoliceAddCaseState extends State<PoliceAddCase> {
           ],
         ),
       ),
-    );
-  }
-}
-
-void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp();
-  runApp(MyApp());
-}
-
-class MyApp extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Police App',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-        visualDensity: VisualDensity.adaptivePlatformDensity,
-      ),
-      home: PoliceAddCase(),
     );
   }
 }

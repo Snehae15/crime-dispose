@@ -1,7 +1,13 @@
+import 'dart:io';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:crime_dispose/screens/user/userhome.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
+import 'package:location/location.dart';
 
 class AddCrime extends StatefulWidget {
   const AddCrime({Key? key}) : super(key: key);
@@ -11,25 +17,38 @@ class AddCrime extends StatefulWidget {
 }
 
 class _AddCrimeState extends State<AddCrime> {
-  TextEditingController crimeTitleController = TextEditingController();
-  TextEditingController crimeLocationController = TextEditingController();
-  TextEditingController complaintController = TextEditingController();
-  DateTime selectedDateTime = DateTime.now();
-  String crimeType = "Theft";
-  XFile? crimeImage;
-  String currentLocation = "Unknown";
+  File? image;
+  String selectedCaseType = 'Theft';
+  DateTime selectedDate = DateTime.now();
+  TimeOfDay selectedTime = TimeOfDay.now();
+  TextEditingController descriptionController = TextEditingController();
+  TextEditingController titleController = TextEditingController();
+  TextEditingController locationController = TextEditingController();
+
+  Future<void> _pickImage(ImageSource source) async {
+    try {
+      final pickedImage = await ImagePicker().pickImage(source: source);
+      if (pickedImage == null) return;
+
+      setState(() {
+        image = File(pickedImage.path);
+      });
+    } catch (e) {
+      print('Error picking image: $e');
+    }
+  }
 
   Future<void> _selectDate(BuildContext context) async {
-    final DateTime? pickedDate = await showDatePicker(
+    final DateTime? picked = await showDatePicker(
       context: context,
-      initialDate: selectedDateTime,
+      initialDate: selectedDate,
       firstDate: DateTime(2000),
       lastDate: DateTime(2101),
     );
 
-    if (pickedDate != null && pickedDate != selectedDateTime) {
+    if (picked != null && picked != selectedDate) {
       setState(() {
-        selectedDateTime = pickedDate;
+        selectedDate = picked;
       });
     }
   }
@@ -37,51 +56,101 @@ class _AddCrimeState extends State<AddCrime> {
   Future<void> _selectTime(BuildContext context) async {
     final TimeOfDay? pickedTime = await showTimePicker(
       context: context,
-      initialTime: TimeOfDay.fromDateTime(selectedDateTime),
+      initialTime: selectedTime,
     );
 
-    if (pickedTime != null) {
+    if (pickedTime != null && pickedTime != selectedTime) {
       setState(() {
-        selectedDateTime = DateTime(
-          selectedDateTime.year,
-          selectedDateTime.month,
-          selectedDateTime.day,
-          pickedTime.hour,
-          pickedTime.minute,
-        );
+        selectedTime = pickedTime;
       });
     }
   }
 
-  Future<void> _uploadCrimeReport() async {
-    final FirebaseFirestore firestore = FirebaseFirestore.instance;
-
+  Future<void> _selectLocation(BuildContext context) async {
     try {
-      await firestore.collection('add_case').add({
-        'crimeType': crimeType,
-        'crimeTitle': crimeTitleController.text,
-        'dateTime': selectedDateTime,
-        'crimeLocation': crimeLocationController.text,
-        'complaint': complaintController.text,
-        'imageURL': crimeImage?.path,
-        // Add other fields as needed
-      });
+      Location location = Location();
+      LocationData currentLocation = await location.getLocation();
 
-      // Reset form after successful upload
+      double latitude = currentLocation.latitude!;
+      double longitude = currentLocation.longitude!;
+
       setState(() {
-        crimeTitleController.clear();
-        crimeLocationController.clear();
-        complaintController.clear();
-        selectedDateTime = DateTime.now();
-        crimeType = "Theft";
-        crimeImage = null;
-        currentLocation = "Unknown";
+        locationController.text = 'Latitude: $latitude, Longitude: $longitude';
       });
+    } catch (e) {
+      print('Error getting location: $e');
+      Fluttertoast.showToast(
+        msg: 'Error getting location. Please try again.',
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.BOTTOM,
+        timeInSecForIosWeb: 1,
+        backgroundColor: Colors.red,
+        textColor: Colors.white,
+        fontSize: 16.0,
+      );
+    }
+  }
 
-      // Optionally, show a success message or navigate to another screen
-    } catch (error) {
-      // Handle the error, e.g., show an error message
-      print('Error uploading crime report: $error');
+  Future<void> _uploadCrimeReport() async {
+    try {
+      print('Uploading crime report...');
+
+      // Upload image to Firebase Storage
+      if (image != null) {
+        String imageName = DateTime.now().millisecondsSinceEpoch.toString();
+        Reference storageReference =
+            FirebaseStorage.instance.ref().child('crime_images/$imageName');
+        await storageReference.putFile(image!);
+
+        // Get the download URL
+        String imageUrl = await storageReference.getDownloadURL();
+        print('Image uploaded. URL: $imageUrl');
+
+        // Save crime details to Firestore
+        FirebaseFirestore firestore = FirebaseFirestore.instance;
+        await firestore.collection('add_case').add({
+          'caseType': selectedCaseType,
+          'date': selectedDate,
+          'time':
+              '${selectedTime.hour}:${selectedTime.minute}', // Convert TimeOfDay to string
+          'description': descriptionController.text,
+          'title': titleController.text,
+          'location': locationController.text,
+          'imageUrl': imageUrl,
+        });
+
+        print('Crime details uploaded to Firestore.');
+
+        // Show selected image name and toast message
+        Fluttertoast.showToast(
+          msg: 'Crime report added successfully!\nImage Name: $imageName',
+          toastLength: Toast.LENGTH_SHORT,
+          gravity: ToastGravity.BOTTOM,
+          timeInSecForIosWeb: 1,
+          backgroundColor: Colors.green,
+          textColor: Colors.white,
+          fontSize: 16.0,
+        );
+
+        // Navigate to UserHome
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => UserHome()),
+        );
+      } else {
+        print('No image selected.');
+      }
+    } catch (e) {
+      print('Error uploading crime report: $e');
+      Fluttertoast.showToast(
+        msg: 'Error uploading crime report. Please try again.',
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.BOTTOM,
+        timeInSecForIosWeb: 1,
+        backgroundColor: Colors.red,
+        textColor: Colors.white,
+        fontSize: 16.0,
+      );
     }
   }
 
@@ -100,10 +169,10 @@ class _AddCrimeState extends State<AddCrime> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               DropdownButtonFormField<String>(
-                value: crimeType,
+                value: selectedCaseType,
                 items: [
                   "Missing",
-                  "wanted",
+                  "Wanted",
                   "Theft",
                   "Assault",
                   "Vandalism",
@@ -132,7 +201,7 @@ class _AddCrimeState extends State<AddCrime> {
                 }).toList(),
                 onChanged: (String? value) {
                   setState(() {
-                    crimeType = value!;
+                    selectedCaseType = value!;
                   });
                 },
                 decoration: const InputDecoration(
@@ -142,7 +211,7 @@ class _AddCrimeState extends State<AddCrime> {
               ),
               const SizedBox(height: 12),
               TextFormField(
-                controller: crimeTitleController,
+                controller: titleController,
                 decoration: const InputDecoration(
                   labelText: "Crime Title",
                   border: OutlineInputBorder(),
@@ -183,14 +252,14 @@ class _AddCrimeState extends State<AddCrime> {
                 children: [
                   Expanded(
                     child: Text(
-                      "Selected Date and Time: ${DateFormat.yMd().add_jm().format(selectedDateTime)}",
+                      "Selected Date and Time: ${DateFormat.yMd().add_jm().format(selectedDate)}",
                     ),
                   ),
                 ],
               ),
               const SizedBox(height: 12),
               TextFormField(
-                controller: crimeLocationController,
+                controller: locationController,
                 decoration: const InputDecoration(
                   labelText: "Crime Location",
                   border: OutlineInputBorder(),
@@ -212,16 +281,21 @@ class _AddCrimeState extends State<AddCrime> {
                     ),
                   ),
                   const SizedBox(width: 16),
-                  Expanded(
-                    child: Text(
-                      "Picked Location: $currentLocation",
+                  ElevatedButton(
+                    onPressed: () => _selectLocation(context),
+                    child: Row(
+                      children: [
+                        Icon(Icons.location_on), // Location icon
+                        const SizedBox(width: 8.0),
+                        const Text('Select Location'),
+                      ],
                     ),
                   ),
                 ],
               ),
               const SizedBox(height: 12),
               TextFormField(
-                controller: complaintController,
+                controller: descriptionController,
                 decoration: const InputDecoration(
                   labelText: "Complaint",
                   border: OutlineInputBorder(),
@@ -240,7 +314,9 @@ class _AddCrimeState extends State<AddCrime> {
                         );
 
                         setState(() {
-                          crimeImage = pickedImage;
+                          image = pickedImage != null
+                              ? File(pickedImage.path)
+                              : null;
                         });
                       },
                       icon: const Icon(Icons.image),
@@ -248,7 +324,8 @@ class _AddCrimeState extends State<AddCrime> {
                     ),
                   ),
                   const SizedBox(width: 16),
-                  Text("Image: ${crimeImage?.name ?? 'None'}"),
+                  Text(
+                      "Image: ${image != null ? image!.path.split('/').last : 'None'}"),
                 ],
               ),
               const SizedBox(height: 16),

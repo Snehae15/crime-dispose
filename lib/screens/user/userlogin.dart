@@ -1,3 +1,4 @@
+import 'package:crime_dispose/screens/user/new%20password.dart';
 import 'package:crime_dispose/screens/user/userBottomnavigation.dart';
 import 'package:crime_dispose/screens/user/userregister1.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -233,6 +234,20 @@ class _UserLogState extends State<UserLog> {
                               //       ),
                               //     ),
                               //   ),
+                              // Add a "Forgot Password?" button
+                              TextButton(
+                                onPressed: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) {
+                                        return NewPassword();
+                                      },
+                                    ),
+                                  );
+                                },
+                                child: const Text("Forgot Password?"),
+                              ),
                             ],
                           ),
                         ),

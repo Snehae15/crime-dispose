@@ -1,6 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:crime_dispose/screens/user/Profile%20view.dart';
-import 'package:crime_dispose/screens/user/new%20password.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
@@ -114,21 +113,7 @@ class _Edit_passwordState extends State<Edit_password> {
                       ),
                     ),
                   ),
-                  // Add a "Forgot Password?" button
-                  TextButton(
-                    onPressed: () {
-                      // Navigate to the "Forgot Password" screen
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) {
-                            return const NewPassword();
-                          },
-                        ),
-                      );
-                    },
-                    child: const Text("Forgot Password?"),
-                  ),
+
                   // Use a Row to place buttons in the same row
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
