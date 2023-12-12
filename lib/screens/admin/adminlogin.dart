@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 
 class AdminLogin extends StatefulWidget {
-  const AdminLogin({Key? key}) : super(key: key);
+  const AdminLogin({super.key});
 
   @override
   State<AdminLogin> createState() => _AdminLoginState();
@@ -16,8 +16,8 @@ class _AdminLoginState extends State<AdminLogin> {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-  TextEditingController _emailController = TextEditingController();
-  TextEditingController _passwordController = TextEditingController();
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
   bool _loading = false;
   bool _obscurePassword = true; // Initially hide password
 
@@ -46,9 +46,9 @@ class _AdminLoginState extends State<AdminLogin> {
                 key: _formKey,
                 child: Column(
                   children: <Widget>[
-                    Padding(
-                      padding: const EdgeInsets.only(top: 20.0, bottom: 20),
-                      child: const Icon(
+                    const Padding(
+                      padding: EdgeInsets.only(top: 20.0, bottom: 20),
+                      child: Icon(
                         Icons.security,
                         size: 80,
                         color: Colors.black,
@@ -65,9 +65,9 @@ class _AdminLoginState extends State<AdminLogin> {
                     const SizedBox(height: 20),
                     TextFormField(
                       controller: _emailController,
-                      decoration: InputDecoration(
+                      decoration: const InputDecoration(
                         labelText: 'Email',
-                        icon: const Icon(Icons.email),
+                        icon: Icon(Icons.email),
                       ),
                       validator: (value) {
                         if (value!.isEmpty) {

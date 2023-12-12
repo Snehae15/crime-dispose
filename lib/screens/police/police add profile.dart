@@ -2,7 +2,9 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
 class PoliceAddProfile extends StatefulWidget {
-  const PoliceAddProfile({Key? key});
+  const PoliceAddProfile({
+    super.key,
+  });
 
   @override
   State<PoliceAddProfile> createState() => _PoliceAddProfileState();

@@ -26,7 +26,7 @@ class PoliceStation {
 }
 
 class AdminHome extends StatefulWidget {
-  const AdminHome({Key? key}) : super(key: key);
+  const AdminHome({super.key});
 
   @override
   State<AdminHome> createState() => _AdminHomeState();
@@ -53,7 +53,7 @@ class _AdminHomeState extends State<AdminHome> {
           .toList();
     } catch (e) {
       print('Error fetching data from Firestore: $e');
-      throw e; // Rethrow the error to handle it in the UI
+      rethrow; // Rethrow the error to handle it in the UI
     }
   }
 
@@ -61,7 +61,7 @@ class _AdminHomeState extends State<AdminHome> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Center(child: const Text('Crime Dispose')),
+        title: const Center(child: Text('Crime Dispose')),
       ),
       drawer: Drawer(
         child: ListView(
@@ -121,7 +121,7 @@ class _AdminHomeState extends State<AdminHome> {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => PoliceViewAllCases(),
+                    builder: (context) => const PoliceViewAllCases(),
                   ),
                 );
               },

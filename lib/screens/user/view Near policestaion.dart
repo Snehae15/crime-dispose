@@ -2,7 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
 class NearPoliceStationPage extends StatelessWidget {
-  const NearPoliceStationPage({Key? key}) : super(key: key);
+  const NearPoliceStationPage({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -35,7 +35,7 @@ class NearPoliceStationPage extends StatelessWidget {
                 children: [
                   ListView.builder(
                     shrinkWrap: true,
-                    physics: NeverScrollableScrollPhysics(),
+                    physics: const NeverScrollableScrollPhysics(),
                     itemCount: policeStations.length,
                     itemBuilder: (context, index) {
                       PoliceStation policeStation = policeStations[index];
@@ -97,7 +97,7 @@ class NearPoliceStationPage extends StatelessWidget {
       return policeStations;
     } catch (e) {
       print('Error fetching police stations: $e');
-      throw e;
+      rethrow;
     }
   }
 }

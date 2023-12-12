@@ -4,7 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 class MyReport extends StatefulWidget {
-  const MyReport({Key? key}) : super(key: key);
+  const MyReport({super.key});
 
   @override
   State<MyReport> createState() => _MyReportState();

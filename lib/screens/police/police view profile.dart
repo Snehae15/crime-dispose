@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 // Import the file where your LandingPage is defined
 
 class ViewProfile extends StatefulWidget {
+  const ViewProfile({super.key});
+
   @override
   State<ViewProfile> createState() => _ViewProfileState();
 }
@@ -47,7 +49,7 @@ class _ViewProfileState extends State<ViewProfile> {
       return policeStations;
     } catch (e) {
       print('Error fetching police stations: $e');
-      throw e;
+      rethrow;
     }
   }
 
@@ -58,12 +60,12 @@ class _ViewProfileState extends State<ViewProfile> {
         title: const Text('View Police Station Profile'),
         actions: [
           IconButton(
-            icon: Icon(Icons.logout),
+            icon: const Icon(Icons.logout),
             onPressed: () {
               // Navigate to LandingPage when the logout icon is pressed
               Navigator.of(context).pushReplacement(
                 MaterialPageRoute(
-                  builder: (context) => LandingPage(),
+                  builder: (context) => const LandingPage(),
                 ),
               );
             },
@@ -95,7 +97,7 @@ class _ViewProfileState extends State<ViewProfile> {
                 children: [
                   ListView.builder(
                     shrinkWrap: true,
-                    physics: NeverScrollableScrollPhysics(),
+                    physics: const NeverScrollableScrollPhysics(),
                     itemCount: policeStations.length,
                     itemBuilder: (context, index) {
                       PoliceStation policeStation = policeStations[index];

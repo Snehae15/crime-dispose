@@ -7,7 +7,7 @@ import 'package:location/location.dart' as loc;
 import 'package:url_launcher/url_launcher.dart';
 
 class UserHome extends StatefulWidget {
-  const UserHome({Key? key}) : super(key: key);
+  const UserHome({super.key});
 
   @override
   State<UserHome> createState() => _UserHomeState();
@@ -70,7 +70,7 @@ class _UserHomeState extends State<UserHome> {
       return cases;
     } catch (e) {
       print('Error fetching cases: $e');
-      throw e;
+      rethrow;
     }
   }
 
@@ -89,7 +89,7 @@ class _UserHomeState extends State<UserHome> {
       return cases;
     } catch (e) {
       print('Error fetching cases: $e');
-      throw e;
+      rethrow;
     }
   }
 
@@ -113,10 +113,10 @@ class _UserHomeState extends State<UserHome> {
     return Card(
       child: ListTile(
         title: Padding(
-          padding: EdgeInsets.only(bottom: 25),
+          padding: const EdgeInsets.only(bottom: 25),
           child: Text(
             caseName,
-            style: TextStyle(fontSize: 18),
+            style: const TextStyle(fontSize: 18),
           ),
         ),
         subtitle: SingleChildScrollView(
@@ -127,7 +127,7 @@ class _UserHomeState extends State<UserHome> {
             children: [
               Row(
                 children: [
-                  Padding(
+                  const Padding(
                     padding: EdgeInsets.only(right: 8),
                     child: Icon(Icons.location_on_outlined, size: 15),
                   ),
@@ -155,7 +155,7 @@ class _UserHomeState extends State<UserHome> {
               ),
             );
           },
-          child: Text("more"),
+          child: const Text("more"),
         ),
         shape: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),
@@ -192,7 +192,7 @@ class _UserHomeState extends State<UserHome> {
                       },
                       child: Text(
                         locationController.text,
-                        style: TextStyle(
+                        style: const TextStyle(
                           fontWeight: FontWeight.w600,
                           fontSize: 18,
                           color: Colors.blue,
@@ -330,7 +330,7 @@ class CaseDetails extends StatelessWidget {
   final String imageUrl;
 
   const CaseDetails({
-    Key? key,
+    super.key,
     required this.caseType,
     required this.location,
     required this.title,
@@ -338,7 +338,7 @@ class CaseDetails extends StatelessWidget {
     required this.time,
     required this.description,
     required this.imageUrl,
-  }) : super(key: key);
+  });
 
   Future<void> _launchMaps(String location) async {
     final mapsUrl = 'https://maps.google.com/?q=$location';
@@ -368,14 +368,14 @@ class CaseDetails extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Text('Case Type:\n $caseType',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
               const SizedBox(height: 8),
               Text('Title:\n $title',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
               const SizedBox(height: 8),
               if (imageUrl.isNotEmpty) Image.network(imageUrl),
               const SizedBox(height: 8),
-              Text('Details:\n',
+              const Text('Details:\n',
                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
               TextField(
                 maxLines: 10,
@@ -396,7 +396,7 @@ class CaseDetails extends StatelessWidget {
                   const SizedBox(width: 8),
                   Text('Date:\n ${dateTime.toLocal()}',
                       style:
-                          TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                          const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                 ],
               ),
               const SizedBox(height: 8),
@@ -406,7 +406,7 @@ class CaseDetails extends StatelessWidget {
                   const SizedBox(width: 8),
                   Text('Time:\n $time',
                       style:
-                          TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                          const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                 ],
               ),
               const SizedBox(height: 8),
@@ -419,7 +419,7 @@ class CaseDetails extends StatelessWidget {
                       _launchMaps(location);
                     },
                     child: Text('Location:\n $location',
-                        style: TextStyle(
+                        style: const TextStyle(
                             fontSize: 15, fontWeight: FontWeight.bold)),
                   ),
                 ],
@@ -432,7 +432,7 @@ class CaseDetails extends StatelessWidget {
                   const SizedBox(width: 8),
                   Text('Case Type:\n $caseType',
                       style:
-                          TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                          const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                 ],
               ),
             ],

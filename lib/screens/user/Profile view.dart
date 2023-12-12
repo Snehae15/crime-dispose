@@ -11,6 +11,8 @@ class ProfilePage extends StatelessWidget {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
+  ProfilePage({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -27,7 +29,7 @@ class ProfilePage extends StatelessWidget {
               future: Future.value(_auth.currentUser),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
-                  return CircularProgressIndicator();
+                  return const CircularProgressIndicator();
                 }
 
                 if (snapshot.hasError) {
@@ -37,14 +39,14 @@ class ProfilePage extends StatelessWidget {
                 User? user = snapshot.data;
 
                 if (user == null) {
-                  return Text('User not found');
+                  return const Text('User not found');
                 }
 
                 return FutureBuilder<DocumentSnapshot>(
                   future: _firestore.collection('users').doc(user.uid).get(),
                   builder: (context, snapshot) {
                     if (snapshot.connectionState == ConnectionState.waiting) {
-                      return CircularProgressIndicator();
+                      return const CircularProgressIndicator();
                     }
 
                     if (snapshot.hasError) {
@@ -62,15 +64,15 @@ class ProfilePage extends StatelessWidget {
                       children: [
                         Text(
                           "Name: $firstName",
-                          style: TextStyle(
+                          style: const TextStyle(
                             fontSize: 20,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
-                        SizedBox(height: 8),
+                        const SizedBox(height: 8),
                         Text(
                           "Email: ${user.email ?? 'N/A'}",
-                          style: TextStyle(fontSize: 16),
+                          style: const TextStyle(fontSize: 16),
                         ),
                       ],
                     );
@@ -78,7 +80,7 @@ class ProfilePage extends StatelessWidget {
                 );
               },
             ),
-            SizedBox(height: 16),
+            const SizedBox(height: 16),
             Card(
               child: ListTile(
                 title: const Text("My Reports"),

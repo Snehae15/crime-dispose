@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 
 class AdminAddPolice extends StatefulWidget {
-  const AdminAddPolice({Key? key}) : super(key: key);
+  const AdminAddPolice({super.key});
 
   @override
   State<AdminAddPolice> createState() => _AdminAddPoliceState();

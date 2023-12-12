@@ -4,7 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 class ViewStudentProfile extends StatefulWidget {
-  const ViewStudentProfile({Key? key}) : super(key: key);
+  const ViewStudentProfile({super.key});
 
   @override
   State<ViewStudentProfile> createState() => _ViewStudentProfileState();
@@ -29,23 +29,21 @@ class _ViewStudentProfileState extends State<ViewStudentProfile> {
     // Get the currently logged-in user
     loggedInUser = FirebaseAuth.instance.currentUser!;
     print("User ID: ${loggedInUser.uid}");
-    if (loggedInUser != null) {
-      // Set initial values or leave them as null
-      firstName = null;
-      email = null;
-      addressLine1 = null;
-      addressLine2 = null;
-      phoneNumber = null;
-      city = null;
-      state = null;
-      district = null;
-      dob = null;
-      documentDetails = null;
+    // Set initial values or leave them as null
+    firstName = null;
+    email = null;
+    addressLine1 = null;
+    addressLine2 = null;
+    phoneNumber = null;
+    city = null;
+    state = null;
+    district = null;
+    dob = null;
+    documentDetails = null;
 
-      // Fetch user details from Firestore
-      fetchUserDetails();
+    // Fetch user details from Firestore
+    fetchUserDetails();
     }
-  }
 
   // Function to fetch user details from Firestore
   Future<void> fetchUserDetails() async {
@@ -135,7 +133,7 @@ class _ViewStudentProfileState extends State<ViewStudentProfile> {
                 ],
               );
             } else {
-              return Center(child: CircularProgressIndicator());
+              return const Center(child: CircularProgressIndicator());
             }
           },
         ),

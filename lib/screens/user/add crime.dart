@@ -11,7 +11,7 @@ import 'package:intl/intl.dart';
 import 'package:location/location.dart' as loc;
 
 class AddCrime extends StatefulWidget {
-  const AddCrime({Key? key}) : super(key: key);
+  const AddCrime({super.key});
 
   @override
   _AddCrimeState createState() => _AddCrimeState();
@@ -147,7 +147,7 @@ class _AddCrimeState extends State<AddCrime> {
 
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => UserHome()),
+          MaterialPageRoute(builder: (context) => const UserHome()),
         );
       } else {
         print('No image selected.');
@@ -302,11 +302,11 @@ class _AddCrimeState extends State<AddCrime> {
                   const SizedBox(width: 16),
                   ElevatedButton(
                     onPressed: () => _selectLocation(context),
-                    child: Row(
+                    child: const Row(
                       children: [
                         Icon(Icons.location_on),
-                        const SizedBox(width: 8.0),
-                        const Text('Select Location'),
+                        SizedBox(width: 8.0),
+                        Text('Select Location'),
                       ],
                     ),
                   ),

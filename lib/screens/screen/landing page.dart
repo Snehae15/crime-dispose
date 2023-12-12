@@ -108,7 +108,7 @@ class LandingPage extends StatelessWidget {
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (context) => PoliceLogin(),
+                                  builder: (context) => const PoliceLogin(),
                                 ),
                               );
                             },

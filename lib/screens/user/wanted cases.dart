@@ -2,7 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
 class Wanted_cases extends StatefulWidget {
-  const Wanted_cases({Key? key}) : super(key: key);
+  const Wanted_cases({super.key});
 
   @override
   State<Wanted_cases> createState() => _Wanted_casesState();
@@ -48,7 +48,7 @@ class _Wanted_casesState extends State<Wanted_cases> {
       return wantedCases;
     } catch (e) {
       print('Error fetching wanted cases: $e');
-      throw e;
+      rethrow;
     }
   }
 
@@ -136,7 +136,7 @@ class _Wanted_casesState extends State<Wanted_cases> {
 class WantedCaseView extends StatelessWidget {
   final String caseName;
 
-  const WantedCaseView({Key? key, required this.caseName}) : super(key: key);
+  const WantedCaseView({super.key, required this.caseName});
 
   @override
   Widget build(BuildContext context) {

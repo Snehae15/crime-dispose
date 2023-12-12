@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class ViewPoliceStations extends StatelessWidget {
-  const ViewPoliceStations({Key? key}) : super(key: key);
+  const ViewPoliceStations({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -11,8 +11,8 @@ class ViewPoliceStations extends StatelessWidget {
       appBar: AppBar(
         title: const Text('Police Stations'),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
+      body: const Padding(
+        padding: EdgeInsets.all(16.0),
         child: PoliceStationList(),
       ),
     );
@@ -20,6 +20,8 @@ class ViewPoliceStations extends StatelessWidget {
 }
 
 class PoliceStationList extends StatelessWidget {
+  const PoliceStationList({super.key});
+
   @override
   Widget build(BuildContext context) {
     return StreamBuilder(
@@ -68,8 +70,8 @@ class PoliceStation extends StatelessWidget {
     required this.policeStationName,
     required this.policeStationAddress,
     required this.policePhoneNumber,
-    Key? key,
-  }) : super(key: key);
+    super.key,
+  });
 
   @override
   Widget build(BuildContext context) {

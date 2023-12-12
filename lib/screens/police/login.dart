@@ -3,6 +3,8 @@ import 'package:crime_dispose/screens/police/police%20bottomnavigation.dart';
 import 'package:flutter/material.dart';
 
 class PoliceLogin extends StatefulWidget {
+  const PoliceLogin({super.key});
+
   @override
   _PoliceLoginState createState() => _PoliceLoginState();
 }
@@ -61,7 +63,7 @@ class _PoliceLoginState extends State<PoliceLogin> {
                       decoration: InputDecoration(
                         labelText: 'Password',
                         // Add an icon and a suffix icon to toggle visibility
-                        prefixIcon: Icon(Icons.lock),
+                        prefixIcon: const Icon(Icons.lock),
                         suffixIcon: IconButton(
                           icon: Icon(
                             _passwordVisible

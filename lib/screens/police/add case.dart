@@ -10,6 +10,8 @@ import 'package:image_picker/image_picker.dart';
 import 'package:location/location.dart' as loc;
 
 class PoliceAddCase extends StatefulWidget {
+  const PoliceAddCase({super.key});
+
   @override
   _PoliceAddCaseState createState() => _PoliceAddCaseState();
 }
@@ -147,7 +149,7 @@ class _PoliceAddCaseState extends State<PoliceAddCase> {
         // Navigate to PoliceViewAllCases
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => PoliceViewAllCases()),
+          MaterialPageRoute(builder: (context) => const PoliceViewAllCases()),
         );
       } else {
         print('No image selected.');
@@ -280,7 +282,7 @@ class _PoliceAddCaseState extends State<PoliceAddCase> {
                 ),
                 const SizedBox(width: 8.0),
                 Text(
-                  "${selectedTime.format(context)}",
+                  selectedTime.format(context),
                   style: const TextStyle(fontSize: 18.0),
                 ),
               ],
@@ -288,11 +290,11 @@ class _PoliceAddCaseState extends State<PoliceAddCase> {
             const SizedBox(height: 16.0),
             ElevatedButton(
               onPressed: () => _selectLocation(context),
-              child: Row(
+              child: const Row(
                 children: [
                   Icon(Icons.location_on), // Location icon
-                  const SizedBox(width: 8.0),
-                  const Text('Select Location'),
+                  SizedBox(width: 8.0),
+                  Text('Select Location'),
                 ],
               ),
             ),

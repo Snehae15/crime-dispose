@@ -12,7 +12,7 @@ class PoliceViewCaseDetails extends StatelessWidget {
   final String imageUrl;
 
   const PoliceViewCaseDetails({
-    Key? key,
+    super.key,
     required this.caseType,
     required this.location,
     required this.title,
@@ -20,7 +20,7 @@ class PoliceViewCaseDetails extends StatelessWidget {
     required this.time,
     required this.description,
     required this.imageUrl,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -37,20 +37,20 @@ class PoliceViewCaseDetails extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text('Case Type: $caseType',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
               const SizedBox(height: 8),
               Text('Title: $title',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
               const SizedBox(height: 8),
               if (imageUrl.isNotEmpty) Image.network(imageUrl),
               const SizedBox(height: 8),
-              Text('Details:',
+              const Text('Details:',
                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
               TextField(
                 maxLines: null,
                 readOnly: true,
                 controller: TextEditingController(text: description),
-                decoration: InputDecoration(
+                decoration: const InputDecoration(
                   border: InputBorder.none,
                   contentPadding: EdgeInsets.zero,
                 ),
@@ -81,7 +81,7 @@ class PoliceViewCaseDetails extends StatelessWidget {
                     const Icon(Icons.location_on),
                     const SizedBox(width: 8),
                     Text('Location: $location',
-                        style: TextStyle(decoration: TextDecoration.underline)),
+                        style: const TextStyle(decoration: TextDecoration.underline)),
                   ],
                 ),
               ),
@@ -104,7 +104,7 @@ class PoliceViewCaseDetails extends StatelessWidget {
 }
 
 class PoliceViewAllCases extends StatefulWidget {
-  const PoliceViewAllCases({Key? key}) : super(key: key);
+  const PoliceViewAllCases({super.key});
 
   @override
   State<PoliceViewAllCases> createState() => _PoliceViewAllCasesState();
@@ -166,7 +166,7 @@ class _PoliceViewAllCasesState extends State<PoliceViewAllCases> {
             Expanded(
               child: Text(
                 caseType,
-                style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
+                style: const TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
               ),
             ),
           ],

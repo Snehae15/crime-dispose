@@ -4,7 +4,9 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 class User_register2 extends StatefulWidget {
-  const User_register2({Key? key});
+  const User_register2({
+    super.key,
+  });
 
   @override
   State<User_register2> createState() => _User_register2State();

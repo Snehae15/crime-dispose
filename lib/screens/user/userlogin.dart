@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 
 class UserLog extends StatefulWidget {
-  const UserLog({Key? key}) : super(key: key);
+  const UserLog({super.key});
 
   @override
   State<UserLog> createState() => _UserLogState();
@@ -90,7 +90,7 @@ class _UserLogState extends State<UserLog> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.center,
                           children: <Widget>[
-                            const Text(
+                            Text(
                               "CRIME",
                               style: TextStyle(
                                 color: Colors.black,
@@ -98,8 +98,8 @@ class _UserLogState extends State<UserLog> {
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
-                            const SizedBox(height: 10),
-                            const Text(
+                            SizedBox(height: 10),
+                            Text(
                               "DISPOSE",
                               style: TextStyle(
                                 color: Colors.black,
@@ -107,8 +107,8 @@ class _UserLogState extends State<UserLog> {
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
-                            const SizedBox(height: 10),
-                            const Icon(Icons.person,
+                            SizedBox(height: 10),
+                            Icon(Icons.person,
                                 size: 60, color: Colors.black),
                           ],
                         ),

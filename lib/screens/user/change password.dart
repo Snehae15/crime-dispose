@@ -4,7 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 class Edit_password extends StatefulWidget {
-  const Edit_password({Key? key}) : super(key: key);
+  const Edit_password({super.key});
 
   @override
   _Edit_passwordState createState() => _Edit_passwordState();

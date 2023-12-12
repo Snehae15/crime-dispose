@@ -7,7 +7,7 @@ class Policeviewcase extends StatelessWidget {
   final String details;
   final String location;
 
-  Policeviewcase({
+  const Policeviewcase({super.key, 
     required this.title,
     required this.category,
     required this.imageUrl,

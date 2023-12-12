@@ -4,7 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 class EditUserProfile extends StatefulWidget {
-  const EditUserProfile({Key? key}) : super(key: key);
+  const EditUserProfile({super.key});
 
   @override
   State<EditUserProfile> createState() => _EditUserProfileState();
@@ -29,11 +29,9 @@ class _EditUserProfileState extends State<EditUserProfile> {
     // Get the currently logged-in user
     loggedInUser = FirebaseAuth.instance.currentUser!;
     print("User ID: ${loggedInUser.uid}");
-    if (loggedInUser != null) {
-      // Fetch user details from Firestore
-      fetchUserDetails();
+    // Fetch user details from Firestore
+    fetchUserDetails();
     }
-  }
 
   Future<void> fetchUserDetails() async {
     try {

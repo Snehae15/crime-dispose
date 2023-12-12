@@ -18,7 +18,6 @@ class _UserBottomNavigationsState extends State<UserBottomNavigations> {
     const UserHome(),
     const AddCrime(),
     ProfilePage(),
-    // const CompanyProfilePage(),
   ];
 
   @override

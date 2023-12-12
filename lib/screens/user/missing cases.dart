@@ -2,7 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
 class Missing_cases extends StatefulWidget {
-  const Missing_cases({Key? key}) : super(key: key);
+  const Missing_cases({super.key});
 
   @override
   State<Missing_cases> createState() => _Missing_casesState();
@@ -48,7 +48,7 @@ class _Missing_casesState extends State<Missing_cases> {
       return missingCases;
     } catch (e) {
       print('Error fetching missing cases: $e');
-      throw e;
+      rethrow;
     }
   }
 
@@ -136,7 +136,7 @@ class _Missing_casesState extends State<Missing_cases> {
 class MissingCaseView extends StatelessWidget {
   final String caseName;
 
-  const MissingCaseView({Key? key, required this.caseName}) : super(key: key);
+  const MissingCaseView({super.key, required this.caseName});
 
   @override
   Widget build(BuildContext context) {
