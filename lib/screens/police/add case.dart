@@ -5,8 +5,9 @@ import 'package:crime_dispose/screens/police/all%20case%20view.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:geocoding/geocoding.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:location/location.dart';
+import 'package:location/location.dart' as loc;
 
 class PoliceAddCase extends StatefulWidget {
   @override
@@ -65,15 +66,28 @@ class _PoliceAddCaseState extends State<PoliceAddCase> {
 
   Future<void> _selectLocation(BuildContext context) async {
     try {
-      Location location = Location();
-      LocationData currentLocation = await location.getLocation();
+      loc.Location location = loc.Location();
+      loc.LocationData currentLocation = await location.getLocation();
 
       double latitude = currentLocation.latitude!;
       double longitude = currentLocation.longitude!;
 
-      setState(() {
-        locationController.text = 'Latitude: $latitude, Longitude: $longitude';
-      });
+      List<Placemark> placemarks =
+          await placemarkFromCoordinates(latitude, longitude);
+
+      if (placemarks.isNotEmpty) {
+        Placemark firstPlacemark = placemarks.first;
+        String locationName =
+            "${firstPlacemark.subLocality}, ${firstPlacemark.locality}";
+
+        setState(() {
+          locationController.text = locationName;
+        });
+      } else {
+        setState(() {
+          locationController.text = 'Location not found';
+        });
+      }
     } catch (e) {
       print('Error getting location: $e');
       Fluttertoast.showToast(
@@ -226,6 +240,14 @@ class _PoliceAddCaseState extends State<PoliceAddCase> {
               ),
             ),
             const SizedBox(height: 16.0),
+            TextField(
+              controller: titleController,
+              decoration: const InputDecoration(
+                labelText: 'Crime Title',
+                border: OutlineInputBorder(),
+              ),
+            ),
+            const SizedBox(height: 16.0),
             Row(
               children: [
                 const Text(
@@ -272,14 +294,6 @@ class _PoliceAddCaseState extends State<PoliceAddCase> {
                   const SizedBox(width: 8.0),
                   const Text('Select Location'),
                 ],
-              ),
-            ),
-            const SizedBox(height: 16.0),
-            TextField(
-              controller: titleController,
-              decoration: const InputDecoration(
-                labelText: 'Crime Title',
-                border: OutlineInputBorder(),
               ),
             ),
             const SizedBox(height: 16.0),

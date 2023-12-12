@@ -107,12 +107,10 @@ class _AdminLoginState extends State<AdminLogin> {
                       onPressed: () async {
                         if (_formKey.currentState!.validate()) {
                           try {
-                            // Check if the entered email and password are admin credentials
                             if (_emailController.text.trim() ==
                                     'admin@gmail.com' &&
                                 _passwordController.text.trim() ==
                                     'Admin@123') {
-                              // Navigate to the admin home screen
                               Navigator.pushReplacement(
                                 context,
                                 MaterialPageRoute(
@@ -120,7 +118,6 @@ class _AdminLoginState extends State<AdminLogin> {
                                 ),
                               );
                             } else {
-                              // If the entered credentials are not admin credentials, show an error message
                               showToast('Invalid admin credentials');
                             }
                           } catch (e) {

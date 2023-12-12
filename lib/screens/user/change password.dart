@@ -43,7 +43,7 @@ class _Edit_passwordState extends State<Edit_password> {
         // Navigate to the profile page or any other screen
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => const ProfilePage()),
+          MaterialPageRoute(builder: (context) => ProfilePage()),
         );
       }
     } catch (error) {
@@ -124,7 +124,7 @@ class _Edit_passwordState extends State<Edit_password> {
                             context,
                             MaterialPageRoute(
                               builder: (context) {
-                                return const ProfilePage();
+                                return ProfilePage();
                               },
                             ),
                           );

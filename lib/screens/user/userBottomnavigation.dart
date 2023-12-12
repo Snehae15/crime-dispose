@@ -17,7 +17,7 @@ class _UserBottomNavigationsState extends State<UserBottomNavigations> {
   final pages = [
     const UserHome(),
     const AddCrime(),
-    const ProfilePage(),
+    ProfilePage(),
     // const CompanyProfilePage(),
   ];
 

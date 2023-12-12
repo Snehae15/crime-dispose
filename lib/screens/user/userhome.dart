@@ -2,6 +2,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:crime_dispose/screens/user/missing%20cases.dart';
 import 'package:crime_dispose/screens/user/wanted%20cases.dart';
 import 'package:flutter/material.dart';
+import 'package:geocoding/geocoding.dart';
+import 'package:location/location.dart' as loc;
 import 'package:url_launcher/url_launcher.dart';
 
 class UserHome extends StatefulWidget {
@@ -14,6 +16,7 @@ class UserHome extends StatefulWidget {
 class _UserHomeState extends State<UserHome> {
   late Future<List<Map<String, dynamic>>> casesFuture;
   TextEditingController searchController = TextEditingController();
+  TextEditingController locationController = TextEditingController();
 
   @override
   void initState() {
@@ -21,11 +24,63 @@ class _UserHomeState extends State<UserHome> {
     casesFuture = fetchCases();
   }
 
+  Future<void> _selectLocation(BuildContext context) async {
+    try {
+      loc.Location location = loc.Location();
+      loc.LocationData? currentLocation = await location.getLocation();
+
+      if (currentLocation != null) {
+        double latitude = currentLocation.latitude!;
+        double longitude = currentLocation.longitude!;
+
+        List<Placemark> placemarks =
+            await placemarkFromCoordinates(latitude, longitude);
+
+        if (placemarks.isNotEmpty) {
+          Placemark firstPlacemark = placemarks.first;
+          String locationName =
+              "${firstPlacemark.subLocality}, ${firstPlacemark.locality}";
+
+          setState(() {
+            locationController.text = locationName;
+          });
+        } else {
+          setState(() {
+            locationController.text = 'Location not found';
+          });
+        }
+      } else {
+        // Handle the case where location is null
+      }
+    } catch (e) {
+      print('Error getting location: $e');
+    }
+  }
+
   Future<List<Map<String, dynamic>>> fetchCases() async {
     try {
       FirebaseFirestore firestore = FirebaseFirestore.instance;
       QuerySnapshot querySnapshot =
           await firestore.collection('add_case').get();
+
+      List<Map<String, dynamic>> cases = querySnapshot.docs.map((doc) {
+        return doc.data() as Map<String, dynamic>;
+      }).toList();
+
+      return cases;
+    } catch (e) {
+      print('Error fetching cases: $e');
+      throw e;
+    }
+  }
+
+  Future<List<Map<String, dynamic>>> fetchCasesByTitle(String title) async {
+    try {
+      FirebaseFirestore firestore = FirebaseFirestore.instance;
+      QuerySnapshot querySnapshot = await firestore
+          .collection('add_case')
+          .where('title', isEqualTo: title.toUpperCase())
+          .get();
 
       List<Map<String, dynamic>> cases = querySnapshot.docs.map((doc) {
         return doc.data() as Map<String, dynamic>;
@@ -46,6 +101,69 @@ class _UserHomeState extends State<UserHome> {
     }).toList();
   }
 
+  Widget _buildCaseCard(
+    String caseName,
+    String location,
+    String caseType,
+    Timestamp date,
+    String time,
+    String description,
+    String imageUrl,
+  ) {
+    return Card(
+      child: ListTile(
+        title: Padding(
+          padding: EdgeInsets.only(bottom: 25),
+          child: Text(
+            caseName,
+            style: TextStyle(fontSize: 18),
+          ),
+        ),
+        subtitle: SingleChildScrollView(
+          scrollDirection:
+              Axis.horizontal, // or Axis.vertical based on your content
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Padding(
+                    padding: EdgeInsets.only(right: 8),
+                    child: Icon(Icons.location_on_outlined, size: 15),
+                  ),
+                  Text(location),
+                ],
+              ),
+              // Add more information if needed
+            ],
+          ),
+        ),
+        trailing: TextButton(
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => CaseDetails(
+                  caseType: caseType,
+                  location: location,
+                  title: caseName,
+                  date: date,
+                  time: time,
+                  description: description,
+                  imageUrl: imageUrl,
+                ),
+              ),
+            );
+          },
+          child: Text("more"),
+        ),
+        shape: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -60,16 +178,26 @@ class _UserHomeState extends State<UserHome> {
                   mainAxisAlignment: MainAxisAlignment.start,
                   children: [
                     GestureDetector(
-                      onTap: () {},
+                      onTap: () {
+                        _selectLocation(context);
+                      },
                       child: const Icon(
                         Icons.location_on_outlined,
                         color: Colors.red,
                       ),
                     ),
-                    const Text(
-                      "Current",
-                      style:
-                          TextStyle(fontWeight: FontWeight.w600, fontSize: 18),
+                    GestureDetector(
+                      onTap: () {
+                        _selectLocation(context);
+                      },
+                      child: Text(
+                        locationController.text,
+                        style: TextStyle(
+                          fontWeight: FontWeight.w600,
+                          fontSize: 18,
+                          color: Colors.blue,
+                        ),
+                      ),
                     ),
                   ],
                 ),
@@ -84,8 +212,7 @@ class _UserHomeState extends State<UserHome> {
                   controller: searchController,
                   onChanged: (query) {
                     setState(() {
-                      // Filter cases based on the search query
-                      casesFuture = Future.value(filterCases([], query));
+                      casesFuture = fetchCasesByTitle(query);
                     });
                   },
                   decoration: InputDecoration(
@@ -166,7 +293,6 @@ class _UserHomeState extends State<UserHome> {
                     List<Map<String, dynamic>> cases = snapshot.data!;
 
                     if (searchController.text.isNotEmpty) {
-                      // If search query is not empty, use filtered cases
                       cases = filterCases(cases, searchController.text);
                     }
 
@@ -188,55 +314,6 @@ class _UserHomeState extends State<UserHome> {
               ),
             ],
           ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildCaseCard(
-    String caseName,
-    String location,
-    String caseType,
-    Timestamp date, // Change the type to Timestamp
-    String time,
-    String description,
-    String imageUrl,
-  ) {
-    return Card(
-      child: ListTile(
-        title: const Padding(
-          padding: EdgeInsets.only(top: 20, right: 150),
-          child: Icon(Icons.location_on_outlined, size: 15),
-        ),
-        subtitle: Text(location),
-        trailing: TextButton(
-          onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => CaseDetails(
-                  caseType: caseType,
-                  location: location,
-                  title: caseName,
-                  date: date,
-                  time: time,
-                  description: description,
-                  imageUrl: imageUrl,
-                ),
-              ),
-            );
-          },
-          child: const Text("more"),
-        ),
-        leading: Padding(
-          padding: const EdgeInsets.only(bottom: 25),
-          child: Text(
-            caseName,
-            style: const TextStyle(fontSize: 18),
-          ),
-        ),
-        shape: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
         ),
       ),
     );
@@ -274,7 +351,6 @@ class CaseDetails extends StatelessWidget {
       }
     } catch (e) {
       print('Error launching Maps: $e');
-      // Handle the error gracefully, e.g., show a dialog to the user
     }
   }
 
@@ -346,6 +422,17 @@ class CaseDetails extends StatelessWidget {
                         style: TextStyle(
                             fontSize: 15, fontWeight: FontWeight.bold)),
                   ),
+                ],
+              ),
+              // Include this part to display the caseType
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  const Icon(Icons.category),
+                  const SizedBox(width: 8),
+                  Text('Case Type:\n $caseType',
+                      style:
+                          TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                 ],
               ),
             ],

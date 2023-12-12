@@ -33,28 +33,27 @@ class AdminHome extends StatefulWidget {
 }
 
 class _AdminHomeState extends State<AdminHome> {
-  List<PoliceStation> policeStations = [];
+  late Future<List<PoliceStation>> _policeStations;
 
   @override
   void initState() {
     super.initState();
-    fetchDataFromFirestore();
+    _policeStations = fetchDataFromFirestore();
   }
 
-  Future<void> fetchDataFromFirestore() async {
+  Future<List<PoliceStation>> fetchDataFromFirestore() async {
     try {
       FirebaseFirestore firestore = FirebaseFirestore.instance;
       QuerySnapshot querySnapshot =
           await firestore.collection('add_police').get();
 
-      setState(() {
-        policeStations = querySnapshot.docs
-            .map((doc) =>
-                PoliceStation.fromJson(doc.data() as Map<String, dynamic>))
-            .toList();
-      });
+      return querySnapshot.docs
+          .map((doc) =>
+              PoliceStation.fromJson(doc.data() as Map<String, dynamic>))
+          .toList();
     } catch (e) {
       print('Error fetching data from Firestore: $e');
+      throw e; // Rethrow the error to handle it in the UI
     }
   }
 
@@ -166,53 +165,70 @@ class _AdminHomeState extends State<AdminHome> {
           ],
         ),
       ),
-      body: SingleChildScrollView(
+      body: Padding(
         padding: const EdgeInsets.all(8.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: policeStations.map((policeStation) {
-            return Card(
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
+        child: FutureBuilder<List<PoliceStation>>(
+          future: _policeStations,
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const Center(child: CircularProgressIndicator());
+            } else if (snapshot.hasError) {
+              return Center(child: Text('Error: ${snapshot.error}'));
+            } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+              return const Center(child: Text('No data available'));
+            } else {
+              return SingleChildScrollView(
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Icon(
-                      Icons.location_on,
-                      color: Colors.blue,
-                      size: 32,
-                    ),
-                    const SizedBox(height: 10),
-                    Text(
-                      'Police Station Name: ${policeStation.name}',
-                      style: const TextStyle(
-                          fontSize: 18, fontWeight: FontWeight.bold),
-                    ),
-                    const SizedBox(height: 10),
-                    Text(
-                      'Location: ${policeStation.location}',
-                      style: const TextStyle(fontSize: 16),
-                    ),
-                    const SizedBox(height: 10),
-                    Row(
-                      children: [
-                        const Icon(
-                          Icons.phone,
-                          color: Colors.green,
-                          size: 24,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: snapshot.data!.map((policeStation) {
+                    return Card(
+                      child: Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Icon(
+                              Icons.location_on,
+                              color: Colors.blue,
+                              size: 32,
+                            ),
+                            const SizedBox(height: 10),
+                            Text(
+                              'Police Station Name: ${policeStation.name}',
+                              style: const TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const SizedBox(height: 10),
+                            Text(
+                              'Location: ${policeStation.location}',
+                              style: const TextStyle(fontSize: 16),
+                            ),
+                            const SizedBox(height: 10),
+                            Row(
+                              children: [
+                                const Icon(
+                                  Icons.phone,
+                                  color: Colors.green,
+                                  size: 24,
+                                ),
+                                const SizedBox(width: 8),
+                                Text(
+                                  'Phone Number: ${policeStation.phoneNumber}',
+                                  style: const TextStyle(fontSize: 16),
+                                ),
+                              ],
+                            ),
+                          ],
                         ),
-                        const SizedBox(width: 8),
-                        Text(
-                          'Phone Number: ${policeStation.phoneNumber}',
-                          style: const TextStyle(fontSize: 16),
-                        ),
-                      ],
-                    ),
-                  ],
+                      ),
+                    );
+                  }).toList(),
                 ),
-              ),
-            );
-          }).toList(),
+              );
+            }
+          },
         ),
       ),
     );

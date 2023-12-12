@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:crime_dispose/screens/user/missing%20cases%20view.dart';
+import 'package:crime_dispose/screens/user/userhome.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 class MyReport extends StatefulWidget {
@@ -10,14 +11,33 @@ class MyReport extends StatefulWidget {
 }
 
 class _MyReportState extends State<MyReport> {
-  Future<List<Map<String, dynamic>>> fetchUserCases() async {
-    // Replace 'add_case' with your actual collection name
-    QuerySnapshot querySnapshot =
-        await FirebaseFirestore.instance.collection('add_case').get();
+  final FirebaseAuth _auth = FirebaseAuth.instance;
 
-    return querySnapshot.docs
-        .map((doc) => doc.data() as Map<String, dynamic>)
-        .toList();
+  Future<List<Map<String, dynamic>>> fetchUserCases() async {
+    try {
+      User? user = _auth.currentUser;
+      print('Current user: $user');
+
+      if (user != null) {
+        QuerySnapshot querySnapshot = await FirebaseFirestore.instance
+            .collection('add_case')
+            .where('userId', isEqualTo: user.uid)
+            .get();
+
+        print('Query result: ${querySnapshot.docs.length} documents');
+
+        return querySnapshot.docs
+            .map((doc) => doc.data() as Map<String, dynamic>)
+            .toList();
+      } else {
+        print('User is null');
+        return [];
+      }
+    } catch (e, stackTrace) {
+      print('Error fetching user cases: $e');
+      print(stackTrace);
+      return [];
+    }
   }
 
   @override
@@ -31,7 +51,9 @@ class _MyReportState extends State<MyReport> {
         future: fetchUserCases(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return CircularProgressIndicator();
+            return const Center(
+              child: CircularProgressIndicator(),
+            );
           }
 
           if (snapshot.hasError) {
@@ -44,25 +66,25 @@ class _MyReportState extends State<MyReport> {
 
           return Column(
             children: [
-              const Row(
-                children: [
-                  Padding(
-                    padding: EdgeInsets.all(8.0),
-                    child: Text(
-                      "My Cases",
-                      style:
-                          TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
-                    ),
-                  ),
-                ],
+              const SizedBox(height: 20),
+              const Text(
+                "My Cases",
+                style: TextStyle(
+                  fontSize: 30,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
-              Column(
-                children: cases.map((caseData) {
-                  String caseName = caseData['caseName'];
-                  String location = caseData['location'];
-
-                  return _buildCaseCard(caseName, location);
-                }).toList(),
+              const SizedBox(height: 20),
+              Expanded(
+                child: ListView.builder(
+                  itemCount: cases.length,
+                  itemBuilder: (context, index) {
+                    String caseName =
+                        cases[index]['caseName'] ?? 'Unknown Case';
+                    String location = cases[index]['location'] ?? '';
+                    return _buildCaseCard(cases[index], caseName, location);
+                  },
+                ),
               ),
             ],
           );
@@ -71,7 +93,8 @@ class _MyReportState extends State<MyReport> {
     );
   }
 
-  Widget _buildCaseCard(String caseName, String location) {
+  Widget _buildCaseCard(
+      Map<String, dynamic> caseData, String caseName, String location) {
     return Card(
       child: ListTile(
         title: const Padding(
@@ -84,7 +107,15 @@ class _MyReportState extends State<MyReport> {
             Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (context) => const MissingCaseView(),
+                builder: (context) => CaseDetails(
+                  caseType: caseData['caseType'] ?? '',
+                  location: location,
+                  title: caseName,
+                  date: caseData['date'] ?? '',
+                  time: caseData['time'] ?? '',
+                  description: caseData['description'] ?? '',
+                  imageUrl: caseData['imageUrl'] ?? '',
+                ),
               ),
             );
           },

@@ -43,13 +43,6 @@ class _WelcomePageState extends State<WelcomePage> {
                   style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
                 ),
               ),
-              // const Padding(
-              //   padding: EdgeInsets.all(10.0),
-              //   child: Text(
-              //     'Application for easy job  search and Job Providers',
-              //     style: TextStyle(color: Colors.grey),
-              //   ),
-              // ),
               Padding(
                 padding: const EdgeInsets.all(10.0),
                 child: ElevatedButton(

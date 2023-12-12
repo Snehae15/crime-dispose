@@ -24,30 +24,30 @@ class _Wanted_casesState extends State<Wanted_cases> {
   @override
   void initState() {
     super.initState();
-    wantedCasesFuture = fetchMissingCases();
+    wantedCasesFuture = fetchWantedCases();
   }
 
-  Future<List<Case>> fetchMissingCases() async {
+  Future<List<Case>> fetchWantedCases() async {
     try {
       FirebaseFirestore firestore = FirebaseFirestore.instance;
       QuerySnapshot querySnapshot = await firestore
           .collection('add_case')
-          .where('caseType', isEqualTo: 'Wanted') // Filter by caseType
+          .where('caseType', isEqualTo: 'Wanted')
           .get();
 
-      List<Case> missingCases = querySnapshot.docs.map((doc) {
+      List<Case> wantedCases = querySnapshot.docs.map((doc) {
         Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
 
-        // Ensure the field name matches the one in Firestore document
+        // Ensure the field names match the ones in Firestore document
         return Case(
-          caseName: data['caseType'] ?? '', // Check the field name here
+          caseName: data['title'] ?? '',
           location: data['location'] ?? '',
         );
       }).toList();
 
-      return missingCases;
+      return wantedCases;
     } catch (e) {
-      print('Error fetching wamted cases: $e');
+      print('Error fetching wanted cases: $e');
       throw e;
     }
   }
@@ -57,21 +57,12 @@ class _Wanted_casesState extends State<Wanted_cases> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.grey[400],
+        title: const Text('Wanted Cases'),
       ),
       backgroundColor: Colors.grey[400],
       body: Column(
         children: [
-          const Row(
-            children: [
-              Padding(
-                padding: EdgeInsets.all(8.0),
-                child: Text(
-                  "Wanted Cases",
-                  style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
-                ),
-              ),
-            ],
-          ),
+          const SizedBox(height: 8.0),
           FutureBuilder<List<Case>>(
             future: wantedCasesFuture,
             builder: (context, snapshot) {
@@ -114,7 +105,7 @@ class _Wanted_casesState extends State<Wanted_cases> {
         subtitle: Text(location),
         trailing: TextButton(
           onPressed: () {
-            // Navigate to MissingCaseView when the "more" button is pressed
+            // Navigate to WantedCaseView when the "more" button is pressed
             Navigator.push(
               context,
               MaterialPageRoute(
@@ -151,15 +142,15 @@ class WantedCaseView extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Center(child: Text('Missing case')),
+        title: const Center(child: Text('Wanted Case Details')),
         backgroundColor: Colors.grey[400],
       ),
       backgroundColor: Colors.grey[400],
       body: FutureBuilder<DocumentSnapshot>(
         future: FirebaseFirestore.instance
             .collection('add_case')
-            .where('caseType', isEqualTo: 'Missing')
-            // .where('caseName', isEqualTo: caseName) // Filter by caseName
+            .where('caseType', isEqualTo: 'Wanted')
+            .where('title', isEqualTo: caseName)
             .get()
             .then((QuerySnapshot querySnapshot) {
           return querySnapshot.docs.first;
@@ -186,7 +177,7 @@ class WantedCaseView extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 Text(
-                  'Case Name: ${data['caseName']}',
+                  'Case Name: ${data['title']}',
                   style: const TextStyle(
                       fontSize: 24, fontWeight: FontWeight.bold),
                 ),
@@ -198,8 +189,6 @@ class WantedCaseView extends StatelessWidget {
                 const SizedBox(height: 8.0),
                 Image.network(
                   data['imageUrl'],
-                  height: 200,
-                  fit: BoxFit.cover,
                 ),
                 const SizedBox(height: 16.0),
                 const Text(

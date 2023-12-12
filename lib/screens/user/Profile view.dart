@@ -1,11 +1,15 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:crime_dispose/screens/screen/landing%20page.dart';
 import 'package:crime_dispose/screens/user/Settings.dart';
 import 'package:crime_dispose/screens/user/about.dart';
 import 'package:crime_dispose/screens/user/myreport.dart';
 import 'package:crime_dispose/screens/user/view%20Near%20policestaion.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 class ProfilePage extends StatelessWidget {
-  const ProfilePage({super.key});
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   @override
   Widget build(BuildContext context) {
@@ -15,20 +19,66 @@ class ProfilePage extends StatelessWidget {
       ),
       backgroundColor: Colors.grey[400],
       body: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.only(left: 12.0),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              "Name",
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            FutureBuilder<User?>(
+              future: Future.value(_auth.currentUser),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return CircularProgressIndicator();
+                }
+
+                if (snapshot.hasError) {
+                  return Text('Error: ${snapshot.error}');
+                }
+
+                User? user = snapshot.data;
+
+                if (user == null) {
+                  return Text('User not found');
+                }
+
+                return FutureBuilder<DocumentSnapshot>(
+                  future: _firestore.collection('users').doc(user.uid).get(),
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return CircularProgressIndicator();
+                    }
+
+                    if (snapshot.hasError) {
+                      return Text('Error: ${snapshot.error}');
+                    }
+
+                    var userData = snapshot.data?.data();
+                    var firstName = userData != null
+                        ? (userData as Map<String, dynamic>)['firstName'] ??
+                            'N/A'
+                        : 'N/A';
+
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          "Name: $firstName",
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        SizedBox(height: 8),
+                        Text(
+                          "Email: ${user.email ?? 'N/A'}",
+                          style: TextStyle(fontSize: 16),
+                        ),
+                      ],
+                    );
+                  },
+                );
+              },
             ),
-            const SizedBox(height: 8),
-            const Text(
-              "Email",
-              style: TextStyle(fontSize: 16),
-            ),
-            const SizedBox(height: 16),
+            SizedBox(height: 16),
             Card(
               child: ListTile(
                 title: const Text("My Reports"),
@@ -47,7 +97,8 @@ class ProfilePage extends StatelessWidget {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                        builder: (context) => const NearPoliceStationPage()),
+                      builder: (context) => const NearPoliceStationPage(),
+                    ),
                   );
                 },
               ),
@@ -59,7 +110,8 @@ class ProfilePage extends StatelessWidget {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                        builder: (context) => const SettingsPage()),
+                      builder: (context) => const SettingsPage(),
+                    ),
                   );
                 },
               ),
@@ -70,7 +122,22 @@ class ProfilePage extends StatelessWidget {
                 onTap: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => const About_page()),
+                    MaterialPageRoute(
+                      builder: (context) => const About_page(),
+                    ),
+                  );
+                },
+              ),
+            ),
+            Card(
+              child: ListTile(
+                title: const Text("Log Out"),
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const LandingPage(),
+                    ),
                   );
                 },
               ),

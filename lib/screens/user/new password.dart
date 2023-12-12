@@ -89,7 +89,7 @@ class _NewPasswordState extends State<NewPassword> {
                       context,
                       MaterialPageRoute(
                         builder: (context) {
-                          return const ProfilePage();
+                          return ProfilePage();
                         },
                       ),
                     );

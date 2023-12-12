@@ -32,15 +32,15 @@ class _Missing_casesState extends State<Missing_cases> {
       FirebaseFirestore firestore = FirebaseFirestore.instance;
       QuerySnapshot querySnapshot = await firestore
           .collection('add_case')
-          .where('caseType', isEqualTo: 'Missing') // Filter by caseType
+          .where('caseType', isEqualTo: 'Missing')
           .get();
 
       List<Case> missingCases = querySnapshot.docs.map((doc) {
         Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
 
-        // Ensure the field name matches the one in Firestore document
+        // Ensure the field names match the ones in Firestore document
         return Case(
-          caseName: data['caseType'] ?? '', // Check the field name here
+          caseName: data['title'] ?? '',
           location: data['location'] ?? '',
         );
       }).toList();
@@ -57,21 +57,12 @@ class _Missing_casesState extends State<Missing_cases> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.grey[400],
+        title: const Text('Missing Cases'),
       ),
       backgroundColor: Colors.grey[400],
       body: Column(
         children: [
-          const Row(
-            children: [
-              Padding(
-                padding: EdgeInsets.all(8.0),
-                child: Text(
-                  "Missing Cases",
-                  style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
-                ),
-              ),
-            ],
-          ),
+          const SizedBox(height: 8.0),
           FutureBuilder<List<Case>>(
             future: missingCasesFuture,
             builder: (context, snapshot) {
@@ -151,7 +142,7 @@ class MissingCaseView extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Center(child: Text('Missing case')),
+        title: const Center(child: Text('Missing Case Details')),
         backgroundColor: Colors.grey[400],
       ),
       backgroundColor: Colors.grey[400],
@@ -159,7 +150,7 @@ class MissingCaseView extends StatelessWidget {
         future: FirebaseFirestore.instance
             .collection('add_case')
             .where('caseType', isEqualTo: 'Missing')
-            // .where('caseName', isEqualTo: caseName) // Filter by caseName
+            .where('title', isEqualTo: caseName)
             .get()
             .then((QuerySnapshot querySnapshot) {
           return querySnapshot.docs.first;
@@ -186,7 +177,7 @@ class MissingCaseView extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 Text(
-                  'Case Name: ${data['caseName']}',
+                  'Case Name: ${data['title']}',
                   style: const TextStyle(
                       fontSize: 24, fontWeight: FontWeight.bold),
                 ),
@@ -198,8 +189,6 @@ class MissingCaseView extends StatelessWidget {
                 const SizedBox(height: 8.0),
                 Image.network(
                   data['imageUrl'],
-                  height: 200,
-                  fit: BoxFit.cover,
                 ),
                 const SizedBox(height: 16.0),
                 const Text(

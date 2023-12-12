@@ -1,14 +1,10 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 
-class ViewPoliceStations extends StatefulWidget {
+class ViewPoliceStations extends StatelessWidget {
   const ViewPoliceStations({Key? key}) : super(key: key);
 
-  @override
-  State<ViewPoliceStations> createState() => _ViewPoliceStationsState();
-}
-
-class _ViewPoliceStationsState extends State<ViewPoliceStations> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -37,32 +33,36 @@ class PoliceStationList extends StatelessWidget {
           return const CircularProgressIndicator();
         }
 
-        return ListView(
-          children: snapshot.data!.docs.map((DocumentSnapshot document) {
+        final policeStations = snapshot.data!.docs.map(
+          (DocumentSnapshot document) {
             Map<String, dynamic> data = document.data() as Map<String, dynamic>;
 
-            return PoliceStationCard(
+            return PoliceStation(
               policeId: data['policeId'],
               password: data['password'],
               policeStationName: data['policeStationName'],
               policeStationAddress: data['policeStationAddress'],
               policePhoneNumber: data['policePhoneNumber'],
             );
-          }).toList(),
+          },
+        ).toList();
+
+        return ListView(
+          children: policeStations,
         );
       },
     );
   }
 }
 
-class PoliceStationCard extends StatelessWidget {
+class PoliceStation extends StatelessWidget {
   final String policeId;
   final String password;
   final String policeStationName;
   final String policeStationAddress;
   final String policePhoneNumber;
 
-  const PoliceStationCard({
+  const PoliceStation({
     required this.policeId,
     required this.password,
     required this.policeStationName,
@@ -73,11 +73,13 @@ class PoliceStationCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Split the address into lines
+    List<String> addressLines = policeStationAddress.split('\n');
+
     return Card(
       elevation: 4,
       margin: const EdgeInsets.symmetric(vertical: 8),
       child: ListTile(
-        leading: const Icon(Icons.location_on, color: Colors.blue),
         title: Text('Police ID: $policeId'),
         subtitle: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -94,21 +96,41 @@ class PoliceStationCard extends StatelessWidget {
                 Text(' Station Name: $policeStationName'),
               ],
             ),
-            Row(
-              children: [
-                const Icon(Icons.location_city, color: Colors.green),
-                Text(' Station Address: $policeStationAddress'),
-              ],
-            ),
-            Row(
-              children: [
-                const Icon(Icons.phone, color: Colors.teal),
-                Text(' Phone Number: $policePhoneNumber'),
-              ],
+            // Display address lines
+            for (String addressLine in addressLines)
+              Row(
+                children: [
+                  const Icon(Icons.location_on_outlined, color: Colors.red),
+                  Text(' $addressLine'),
+                ],
+              ),
+            InkWell(
+              onTap: () => _makePhoneCall(policePhoneNumber),
+              child: Row(
+                children: [
+                  const Icon(Icons.phone, color: Colors.teal),
+                  Text(
+                    'Phone Number: $policePhoneNumber',
+                    style: const TextStyle(
+                      color: Colors.blue,
+                      decoration: TextDecoration.underline,
+                    ),
+                  ),
+                ],
+              ),
             ),
           ],
         ),
       ),
     );
+  }
+
+  void _makePhoneCall(String phoneNumber) async {
+    final url = 'tel:$phoneNumber';
+    if (await canLaunch(url)) {
+      await launch(url);
+    } else {
+      throw 'Could not launch $url';
+    }
   }
 }

@@ -11,6 +11,7 @@ class _PoliceLoginState extends State<PoliceLogin> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final TextEditingController _loginIdController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
+  bool _passwordVisible = false; // Added to toggle password visibility
 
   @override
   Widget build(BuildContext context) {
@@ -45,6 +46,8 @@ class _PoliceLoginState extends State<PoliceLogin> {
                       controller: _loginIdController,
                       decoration: const InputDecoration(
                         labelText: 'Login ID',
+                        // Add an icon
+                        prefixIcon: Icon(Icons.person),
                       ),
                       validator: (value) {
                         if (value!.isEmpty) {
@@ -55,8 +58,22 @@ class _PoliceLoginState extends State<PoliceLogin> {
                     ),
                     TextFormField(
                       controller: _passwordController,
-                      decoration: const InputDecoration(
+                      decoration: InputDecoration(
                         labelText: 'Password',
+                        // Add an icon and a suffix icon to toggle visibility
+                        prefixIcon: Icon(Icons.lock),
+                        suffixIcon: IconButton(
+                          icon: Icon(
+                            _passwordVisible
+                                ? Icons.visibility
+                                : Icons.visibility_off,
+                          ),
+                          onPressed: () {
+                            setState(() {
+                              _passwordVisible = !_passwordVisible;
+                            });
+                          },
+                        ),
                       ),
                       validator: (value) {
                         if (value!.isEmpty) {
@@ -64,7 +81,7 @@ class _PoliceLoginState extends State<PoliceLogin> {
                         }
                         return null;
                       },
-                      obscureText: true,
+                      obscureText: !_passwordVisible, // Toggle visibility
                     ),
                     const SizedBox(height: 16),
                     ElevatedButton(

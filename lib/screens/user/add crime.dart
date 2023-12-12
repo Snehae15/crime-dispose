@@ -5,9 +5,10 @@ import 'package:crime_dispose/screens/user/userhome.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:geocoding/geocoding.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
-import 'package:location/location.dart';
+import 'package:location/location.dart' as loc;
 
 class AddCrime extends StatefulWidget {
   const AddCrime({Key? key}) : super(key: key);
@@ -24,6 +25,7 @@ class _AddCrimeState extends State<AddCrime> {
   TextEditingController descriptionController = TextEditingController();
   TextEditingController titleController = TextEditingController();
   TextEditingController locationController = TextEditingController();
+  bool isLoading = false;
 
   Future<void> _pickImage(ImageSource source) async {
     try {
@@ -68,15 +70,28 @@ class _AddCrimeState extends State<AddCrime> {
 
   Future<void> _selectLocation(BuildContext context) async {
     try {
-      Location location = Location();
-      LocationData currentLocation = await location.getLocation();
+      loc.Location location = loc.Location();
+      loc.LocationData currentLocation = await location.getLocation();
 
       double latitude = currentLocation.latitude!;
       double longitude = currentLocation.longitude!;
 
-      setState(() {
-        locationController.text = 'Latitude: $latitude, Longitude: $longitude';
-      });
+      List<Placemark> placemarks =
+          await placemarkFromCoordinates(latitude, longitude);
+
+      if (placemarks.isNotEmpty) {
+        Placemark firstPlacemark = placemarks.first;
+        String locationName =
+            "${firstPlacemark.subLocality}, ${firstPlacemark.locality}";
+
+        setState(() {
+          locationController.text = locationName;
+        });
+      } else {
+        setState(() {
+          locationController.text = 'Location not found';
+        });
+      }
     } catch (e) {
       print('Error getting location: $e');
       Fluttertoast.showToast(
@@ -93,35 +108,33 @@ class _AddCrimeState extends State<AddCrime> {
 
   Future<void> _uploadCrimeReport() async {
     try {
-      print('Uploading crime report...');
+      setState(() {
+        isLoading = true;
+      });
 
-      // Upload image to Firebase Storage
       if (image != null) {
         String imageName = DateTime.now().millisecondsSinceEpoch.toString();
         Reference storageReference =
             FirebaseStorage.instance.ref().child('crime_images/$imageName');
         await storageReference.putFile(image!);
 
-        // Get the download URL
         String imageUrl = await storageReference.getDownloadURL();
-        print('Image uploaded. URL: $imageUrl');
 
-        // Save crime details to Firestore
         FirebaseFirestore firestore = FirebaseFirestore.instance;
         await firestore.collection('add_case').add({
           'caseType': selectedCaseType,
           'date': selectedDate,
-          'time':
-              '${selectedTime.hour}:${selectedTime.minute}', // Convert TimeOfDay to string
+          'time': '${selectedTime.hour}:${selectedTime.minute}',
           'description': descriptionController.text,
           'title': titleController.text,
           'location': locationController.text,
           'imageUrl': imageUrl,
         });
 
-        print('Crime details uploaded to Firestore.');
+        setState(() {
+          isLoading = false;
+        });
 
-        // Show selected image name and toast message
         Fluttertoast.showToast(
           msg: 'Crime report added successfully!\nImage Name: $imageName',
           toastLength: Toast.LENGTH_SHORT,
@@ -132,16 +145,22 @@ class _AddCrimeState extends State<AddCrime> {
           fontSize: 16.0,
         );
 
-        // Navigate to UserHome
         Navigator.push(
           context,
           MaterialPageRoute(builder: (context) => UserHome()),
         );
       } else {
         print('No image selected.');
+        setState(() {
+          isLoading = false;
+        });
       }
     } catch (e) {
       print('Error uploading crime report: $e');
+      setState(() {
+        isLoading = false;
+      });
+
       Fluttertoast.showToast(
         msg: 'Error uploading crime report. Please try again.',
         toastLength: Toast.LENGTH_SHORT,
@@ -285,7 +304,7 @@ class _AddCrimeState extends State<AddCrime> {
                     onPressed: () => _selectLocation(context),
                     child: Row(
                       children: [
-                        Icon(Icons.location_on), // Location icon
+                        Icon(Icons.location_on),
                         const SizedBox(width: 8.0),
                         const Text('Select Location'),
                       ],
